@@ -1,10 +1,5 @@
 import streamlit as st
-from openai import OpenAI
-from coderag.config import OPENAI_API_KEY, OPENAI_CHAT_MODEL
 from prompt_flow import execute_rag_flow
-
-# Initialize the OpenAI client
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 st.title("CodeRAG: Your Coding Assistant")
 

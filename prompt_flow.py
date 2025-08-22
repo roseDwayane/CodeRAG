@@ -1,8 +1,11 @@
-from openai import OpenAI
-from coderag.config import OPENAI_API_KEY, OPENAI_CHAT_MODEL
+from coderag.config import (
+    MODEL_PROVIDER,
+    OPENAI_API_KEY, 
+    OPENAI_CHAT_MODEL,
+    OLLAMA_BASE_URL,
+    OLLAMA_CHAT_MODEL
+)
 from coderag.search import search_code
-
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 SYSTEM_PROMPT = """
 You are an expert coding assistant. Your task is to help users with their question. Use the retrieved code context to inform your responses, but feel free to suggest better solutions if appropriate.
@@ -36,7 +39,22 @@ def execute_rag_flow(user_query):
         # Construct the full prompt
         full_prompt = PRE_PROMPT.format(query=user_query, code_context=code_context)
         
-        # Generate response using OpenAI
+        # Generate response using configured provider
+        if MODEL_PROVIDER.lower() == "ollama":
+            response = _generate_ollama_response(full_prompt)
+        else:
+            response = _generate_openai_response(full_prompt)
+        
+        return response
+    
+    except Exception as e:
+        return f"Error in RAG flow execution: {e}"
+
+def _generate_openai_response(full_prompt):
+    """Generate response using OpenAI API."""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
         response = client.chat.completions.create(
             model=OPENAI_CHAT_MODEL,
             messages=[
@@ -46,8 +64,31 @@ def execute_rag_flow(user_query):
             temperature=0.3,
             max_tokens=4000
         )
-        
         return response.choices[0].message.content.strip()
-    
     except Exception as e:
-        return f"Error in RAG flow execution: {e}"
+        return f"Error generating OpenAI response: {e}"
+
+def _generate_ollama_response(full_prompt):
+    """Generate response using Ollama API."""
+    try:
+        import requests
+        import json
+        
+        url = f"{OLLAMA_BASE_URL}/api/generate"
+        payload = {
+            "model": OLLAMA_CHAT_MODEL,
+            "prompt": f"{SYSTEM_PROMPT}\n\n{full_prompt}",
+            "stream": False,
+            "options": {
+                "temperature": 0.3,
+                "num_predict": 4000
+            }
+        }
+        
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        
+        result = response.json()
+        return result.get("response", "").strip()
+    except Exception as e:
+        return f"Error generating Ollama response: {e}"

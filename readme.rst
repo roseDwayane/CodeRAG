@@ -40,7 +40,9 @@ Prerequisites
 ^^^^^^^^^^^^^
 
 - **Python 3.8+**
-- **OpenAI API Key** (You can get one `here <https://beta.openai.com/signup/>`_)
+- **Model Provider**: Either:
+  - **OpenAI API Key** (You can get one `here <https://beta.openai.com/signup/>`_)
+  - **Ollama** (Install from `here <https://ollama.ai/>`_)
 - **FAISS**
 
 Step 1: Clone the Repository
@@ -72,8 +74,10 @@ Step 3: Configure Environment Variables
 
 Create a ``.env`` file in the root of the project and add the following variables:
 
+**For OpenAI:**
 .. code-block:: bash
 
+   MODEL_PROVIDER=openai
    OPENAI_API_KEY=your_openai_api_key
    OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
    OPENAI_CHAT_MODEL=gpt-4o
@@ -81,8 +85,26 @@ Create a ``.env`` file in the root of the project and add the following variable
    FAISS_INDEX_FILE=path_to_faiss_index
    EMBEDDING_DIM=1536  # Modify if you're using a different embedding model
 
+**For Ollama:**
+.. code-block:: bash
+
+   MODEL_PROVIDER=ollama
+   OLLAMA_BASE_URL=http://localhost:11434
+   OLLAMA_CHAT_MODEL=llama2
+   OLLAMA_EMBEDDING_MODEL=llama2
+   WATCHED_DIR=path_to_your_code_directory
+   FAISS_INDEX_FILE=path_to_faiss_index
+   EMBEDDING_DIM=4096  # Adjust based on your Ollama model
+
 Step 4: Run the Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**For Ollama users:** Make sure Ollama is running and you have the required model:
+
+.. code-block:: bash
+
+   ollama serve
+   ollama pull llama2  # or your preferred model
 
 1. **Start the Backend**:
 
@@ -99,6 +121,14 @@ Step 4: Run the Application
    .. code-block:: bash
 
       streamlit run app.py
+
+**Testing Ollama Integration:**
+
+To verify your Ollama setup is working correctly:
+
+.. code-block:: bash
+
+   python test_ollama_integration.py
 
 Usage
 -----
